@@ -1,6 +1,6 @@
-## SmarTIE Doc REPO
+## DITGBox Doc REPO
 
-In this repository it is stored the SmarTIE documentation. The GitHub page is built from the content of the _index.md_ file and using the **Couscous** framework, instead of Jekyll (provided by GitHub).
+In this repository it is stored the DITGBox documentation. The GitHub page is built from the content of the _index.md_ file and using the **Couscous** framework, instead of Jekyll (provided by GitHub).
 
 Couscous helps to quickly define the template to use for the doc and dynamically creates a side menù.
 
@@ -43,7 +43,7 @@ Once happy with the result, push all the changes you applied to the **master** b
 ```markdown
 Deploying the website
 
-Cloning https://github.com/NM2/smartie-doc.git in /private/var/folders/6m/pwk1kdhn6077_16q6lz_kztm0000gn/T/couscous_deploy_IF54hC
+Cloning https://github.com/NM2/ditgbox-doc.git in /private/var/folders/6m/pwk1kdhn6077_16q6lz_kztm0000gn/T/couscous_deploy_IF54hC
 
 Checking out branch gh-pages
 Copying generated website
