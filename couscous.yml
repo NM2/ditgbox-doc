@@ -6,7 +6,7 @@ template:
 baseUrl: https://nm2.github.io/ditgbox-doc
 
 title: DITGBox Doc
-subTitle: DITGBox Documentation
+subTitle: DITGBox v1.3.9 Documentation
 
 # The left menu bar
 menu:

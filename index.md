@@ -34,8 +34,12 @@ In order to configure an experiment the user has to select a data port by clicki
 ### Traffic Settings
 
 The “Traffic Settings” section allows to customize a new traffic generation experiment, save a preset of the experiment or load a previously saved preset.
-The “Generation mode” button lets the user select the kind of traffic experiments the product supports. Generation modes are dependent on the license currently installed with your DITGBox appliance.
 The “Meter” drop-down menu allows to choose if the metrics computed by DITGBox will be one-way or round-trip.
+The “Generation mode” button lets the user select the kind of traffic experiments the product supports. Generation modes are dependent on the license currently installed with your DITGBox appliance.
+
+#### Customizable Traffic
+
+The Customizable Traffic mode allows to generate synthetic traffic, statistically modeled to emulate any type of real application.
 When a data port has been selected to generate traffic, the user will see a flow profile associated with it. On the left side of each flow profile he can then see/edit its name, status and number of replicas. On the right side there are buttons to add a new flow profile, clone or delete the current one.
 For each traffic flow profile the user can configure settings shown in 5 tabs:
 Application Layer, Transport Layer, Network Layer, Destination and Timing Options.
@@ -43,7 +47,7 @@ Application Layer, Transport Layer, Network Layer, Destination and Timing Option
 
 ![traffic-settings](images/traffic_settings.png?style=centerme)
 
-#### Application Layer
+##### Application Layer
 
 The “Application Layer” tab allows the user to choose a stochastic profile for the generated traffic. Each stochastic profile has its own specific settings. For example, if the VoIP profile is selected the user will be able to choose the codec type used for the traffic generation.
 The “Custom” profile allows to fully customize the generated traffic. By selecting this profile the user is able to set the following parameters:
@@ -53,19 +57,19 @@ The required throughput, the payload size and the packet rate are interdependent
 
 ![custom-profile](images/custom_generation_profile.png?style=centerme)
 
-#### Transport Layer
+##### Transport Layer
 The “Transport Layer” tab allows the user to choose TCP or UDP as the transport layer protocol and the source and destination ports.
 
 
 ![transport-layer](images/transport_layer.png?style=centerme)
 
-#### Network Layer
+##### Network Layer
 The “Network Layer” tab allows to choose the IP version, the source and destination IP addresses with netmask, the “Time To Live” and “Type of Service” values.
 
 
 ![network-layer](images/network_layer.png?style=centerme)
 
-#### Destination
+##### Destination
 The “Destination” tab allows to decide who is going to receive the traffic generated during the experiment. Two kinds of destination can be chosen:
 *loopback* when the destination data port belongs to the same box that generates traffic or *remote box* when the destination data port belongs to a remote box to which the origin box is connected. In order to be able to choose a remote data port, a remote box has to be added first (see Remote Configuration).
 
@@ -76,16 +80,76 @@ The “Destination” tab allows to decide who is going to receive the traffic g
 
 ![traffic-settings-destination-remote_box](images/traffic_settings_destination_remote_box.png?style=centerme)
 
-#### Timing Options
+##### Timing Options
 The “Timing Options” tab allows to set an initial delay for the traffic generation and the time duration of the traffic generation. The latter can be set to *auto* to specify an amount of time after which the generation automatically stops, or *manual* to be able to stop the generation manually.
 
 
 ![traffic-settings-timing-options](images/traffic_settings_timing_options.png?style=centerme)
 
+#### Realistic PCAP Replay
+
+The Realistic PCAP Replay mode allows to replicate selected flows of a pre-collected packet trace with tunable speed. When a data port has been selected to generate traffic, the user will see a flow profile associated with it.
+On the left side of each flow profile he can then see/edit its name, status and number of replicas. On the right side there are buttons to add a new flow profile, clone or delete the current one.
+For each traffic flow profile the user can configure settings shown in 5 tabs: Application Layer, Transport Layer, Network Layer, Destination and Timing Options.
+
+![realistic-pcap](images/realistic_pcap.png?style=centerme)
+
+##### Application Layer
+
+In the "Application Layer" tab users can associate a PCAP trace to a flow profile. They can either upload a new trace or select a previously loaded one.
+When the user tries to load a new trace the PCAP File Manager modal will show up. Here a preview of the uploaded trace file can also be viewed.
+
+![realistic-pcap-trace-upload](images/realistic_pcap_upload.png?style=centerme)
+
+When a trace is loaded, the user has to click on the "Select PCAP Conversation" button in order to select a conversation to be replicated. The PCAP Conversation Selector will show up allowing the user to select a specific conversation within the trace.
+Once the conversation has been chosen the flow profile in the "Traffic Settings" section will be updated to show the relevant info of the selected PCAP conversation.
+
+![realistic-pcap-conversation-loaded](images/realistic_pcap_conversation_loaded.png?style=centerme)
+
+By editing the "Speed scaling" field, users can tune the speed at which the trace is replicated.
+
+##### Transport Layer
+
+In the "Transport Layer" tab the protocol, source and destination ports of the selected conversation are shown and are not editable.
+
+##### Network Layer
+
+The "Network Layer" tab shows the IP version of the replicated conversation and allows users to edit the source and destination IP addresses of the traffic to be generated.
+
+![realistic-pcap-network-layer](images/realistic_pcap_network_layer.png?style=centerme)
+
+##### Destination
+The “Destination” tab allows to decide who is going to receive the traffic generated during the experiment. Two kinds of destination can be chosen:
+*loopback* when the destination data port belongs to the same box that generates traffic or *remote box* when the destination data port belongs to a remote box to which the origin box is connected. In order to be able to choose a remote data port, a remote box has to be added first (see Remote Configuration).
+
+##### Timing Options
+The “Timing Options” tab allows to set an initial delay for the traffic generation and the time duration of the traffic generation. The latter can be set to *auto* to specify an amount of time after which the generation automatically stops, or *manual* to be able to stop the generation manually.
+
+#### High-speed PCAP Replay
+
+The High-speed PCAP Replay mode, by exploiting the Intel® DPDK libraries, allows to replicate a pre-collected trace at the full speed of the data ports involved in the experiment.
+Only one single traffic flow profile is supported in this generation mode. The user can configure its settings in 3 tabs: PCAP Details, Destination and Timing Options.
+
+![high-speed-replay](images/high_speed_replay.png?style=centerme)
+
+##### PCAP Details
+
+In the "PCAP Details" tab users can associate a PCAP trace to the flow profile. They can either upload a new trace or select a previously loaded one.
+When the user tries to load a new trace the PCAP File Manager modal will show up. Here a preview of the uploaded trace file can also be viewed.
+Once the trace is selected, the "Traffic Settings" section will show its duration and downstream/upstream volume. The speed scaling will be set to 100% and it won't be editable.
+
+##### Destination
+The “Destination” tab allows to decide who is going to receive the traffic generated during the experiment. Two kinds of destination can be chosen:
+*loopback* when the destination data port belongs to the same box that generates traffic or *remote box* when the destination data port belongs to a remote box to which the origin box is connected. In order to be able to choose a remote data port, a remote box has to be added first (see Remote Configuration).
+
+##### Timing Options
+The “Timing Options” tab allows to set the time duration of the traffic generation. It can be set to *auto* to specify an amount of time after which the generation automatically stops, or *manual* to be able to stop the generation manually.
+
+![high-speed-timing-options](images/high_speed_timing_options.png?style=centerme)
 
 ### Traffic Generation
-The “Traffic Generation” section shows the current status of the traffic generation on top along with buttons to stop or abort the generation and a table reporting the elapsed time of the experiment and the computed metrics for both the Sender and the Receiver data ports. The rows of this table can be expanded/collapsed by clicking the arrow icons to the right of the data port names.
 
+The “Traffic Generation” section shows the current status of the traffic generation on top along with buttons to stop or abort the generation and a table reporting the elapsed time of the experiment and the computed metrics for both the Sender and the Receiver data ports. The rows of this table can be expanded/collapsed by clicking the arrow icons to the right of the data port names.
 
 ![traffic-generation-running-experiment](images/traffic_generation_running_experiment.png?style=centerme)
 
