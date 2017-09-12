@@ -12,14 +12,14 @@ subTitle: DITGBox v1.3.9 Documentation
 menu:
     sections:
             main:
-                name: DITGBox
+                name: DITGBox WebUI
                 items:
                     intro:
                         text: Introduction
                         relativeUrl: index.html#introduction
                     login:
-                        text: Login
-                        relativeUrl: index.html#login
+                        text: Authentication
+                        relativeUrl: index.html#authentication
                     generation:
                         text: Generation
                         relativeUrl: index.html#generation
@@ -32,3 +32,78 @@ menu:
                     about:
                         text: About
                         relativeUrl: index.html#about
+            API:
+                name: API
+                items:
+                  abort:
+                      text: Abort
+                      relativeUrl: index.html#abort
+                  configure:
+                      text: Configure
+                      relativeUrl: index.html#configure
+                  login:
+                      text: Login
+                      relativeUrl: index.html#login
+                  dataports:
+                      text: Dataports
+                      relativeUrl: index.html#dataports
+                  distribution:
+                      text: Upload Distribution File
+                      relativeUrl: index.html#upload-distribution-file
+                  payload:
+                      text: Upload Payload Content File
+                      relativeUrl: index.html#upload-payload-content-file
+                  pcap:
+                      text: Upload PCAP Trace
+                      relativeUrl: index.html#upload-pcap-trace
+                  deletepresets:
+                      text: Delete Presets
+                      relativeUrl: index.html#delete-presets
+                  retrievepresets:
+                      text: Get Presets
+                      relativeUrl: index.html#get-presets
+                  deletesinglepreset:
+                      text: Delete Single Preset
+                      relativeUrl: index.html#delete-single-preset
+                  editpreset:
+                      text: Edit Preset
+                      relativeUrl: index.html#edit-preset
+                  uploadpreset:
+                      text: Upload Preset
+                      relativeUrl: index.html#upload-preset
+                  addremoteboxe:
+                      text: Add Remote Box
+                      relativeUrl: index.html#add-remote-box
+                  getremoteboxes:
+                      text: Get Remote Boxes
+                      relativeUrl: index.html#get-remote-boxes
+                  deleteremotebox:
+                      text: Delete Remote Box
+                      relativeUrl: index.html#delete-remote-box
+                  getsingleremotebox:
+                      text: Get Single Remote Box
+                      relativeUrl: index.html#get-single-remote-box
+                  forceremoteboxupdate:
+                      text: Force Remote Box Update
+                      relativeUrl: index.html#force-remote-box-update
+                  getresults:
+                      text: Get Results
+                      relativeUrl: index.html#get-results
+                  getexperimentresults:
+                      text: Get Experiment Results
+                      relativeUrl: index.html#get-experiment-results
+                  gethtmlreport:
+                      text: Get HTML Report
+                      relativeUrl: index.html#get-html-report
+                  startexperiment:
+                      text: Start Experiment
+                      relativeUrl: index.html#start-experiment
+                  getboxstatus:
+                      text: Get Box Status
+                      relativeUrl: index.html#get-box-status
+                  stopexperiment:
+                      text: Stop Experiment
+                      relativeUrl: index.html#stop-experiment
+                  syncbox:
+                      text: Synchronize Box
+                      relativeUrl: index.html#synchronize-box

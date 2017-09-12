@@ -121,3 +121,14 @@ img[src*="style=centerme"] {
     display:block;
     margin: 0 auto;
 }
+table {
+    border-collapse: collapse;
+}
+tr, th, td {
+    border: solid;
+    border-color: grey;
+    border-width: 1px;
+}
+th, td {
+    padding: 10px;
+}

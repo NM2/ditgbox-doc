@@ -8,7 +8,7 @@ DITGBox accurately measures the performance of the whole traffic and/or the deta
 It can act as a simple (open loop) packet generator or it can work towards the same or other DITGBoxes.
 DITGBox is controlled via an easy-to-use web GUI and through a RESTful API.
 
-## Login
+## Authentication
 
 Once the product has been activated the user will be automatically redirected to the “Login Page” that shows:
 two input boxes for username and password, a “Login” button to confirm the credentials and a “Recovery” button to start the password reset procedure or to bring the product to the factory configuration.
@@ -327,3 +327,674 @@ the limits imposed by the license;
 the list of the RFCs the current version of the product is compliant with
 (the list depends on the license installed on the box);
 license information for third party components used in DITGBox.
+
+## API
+
+DITGBox provides an easy-to-use RESTful API that can be used to interact with the platform
+
+### Abort
+
+Used to stop a running experiment (the results collected up to that point are lost)
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/abort |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+
+### Configure
+
+Used to configure a new experiment
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/configure |
+
+#### JSON Input
+
+>**experiment_type** (string, required) : The type of experiment to configure.
+>It can be: "rfc2679", "rfc2680", "rfc2681", "rfc3148", "rfc3393", "rfc3432", "rfc2544"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>
+> If "experiment_type" is "rfc2679", "rfc2680", "rfc2681" or "rfc3432" the expected "parameters" json is:
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+> If "experiment_type" is "rfc3393" the expected "parameters" json is:
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**intervals** (integer) : In "sample" experiments it is used to compute jitter for "intervals" groups of packets
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+> If "experiment_type" is "rfc3148" the expected "parameters" json is:
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : The duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : The generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**intervals** (integer) : In "sample" experiments it is used to compute jitter for "intervals" groups of packets
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+> If "experiment_type" is "rfc2544" the expected "parameters" json is:
+>>**test** (string) : The type of RFC 2544 test to configure.
+>>It can be "throughput", "latency", "frame-loss", "back-to-back", "reset", "recovery" or "all"
+>>
+>>**has_ip** (boolean) : Determines if the Device Under Test has an IP address (used to avoid sending routing updates to the device if not needed)
+>>
+>>**dut_addr** (string) : IP address (if any) of the Device Under Test
+>>
+>>**modifier** (string) : Test modifier as reported in RFC 2544.
+>>It can be "routing_modifier", "management_modifier" or "broadcast_modifier"
+>>
+>>**reset_plugin** (string) : Reset script to be used if the reset test is run.
+>>It can be "DLink2640B", "CiscoCatalyst2960" or "EnterasysC3G12448P"
+>>
+>>**options** (string) : Options to be passed to the test. This field **MUST** be double quoted
+>>
+>>For the throughput test the available options are:
+>>>**-T [TRIAL_TIME]** is the maximum time (in seconds) conceded to each trial of the test. It can not be less than 60. This value is set to 60 by default
+>>>
+>>>**-R [RETRY]** is the maximum number of retries conceded to the script to compute the throughput with a binary search
+>>>
+>>>**-F [STARTING_FREQ]** is the starting frequency used at the start of each trial.
+>>>It represents the percentage of the maximum available theoretical band used at the start of each trial
+>>>
+>>
+>>>**-D [TIME]** is the maximum time (in seconds)  conceded to each trial of the test. It can not be less than 120. This value is set to 120 by default
+>>>
+>>>**-A [RETRY]** is the number of repetitions of the script. At least 20 retries for each tested frame size must be run. Its default value is 20
+>>>
+>>
+>>For the frame-loss test the available options are:
+>>>**-P [PACKETS]** is the number of packets to send in each traffic flow towards the Device Under Test
+>>>
+>>>**-G [GRANULARITY]** is the test granularity, that is the how much (in percentage) two successive frame sizes differ
+>>
+>>For the back-to-back test the available options are:
+>>>**-S [TRIAL_TIME]** is the time (in seconds) conceded to each trial of the test. It can not be less than 20. This value is set to 20 by default
+>>>
+>>>**-C [RETRY]** is the number of repetitions of the script. At least 50 retries for each tested frame size must be run. Its default value is 50 
+>>>
+>>For the system recovery test the available options are:
+>>>**-L [TIME]** is the duration (in seconds) of the test traffic sent during the experiment for each frame size. It can not be less than 60. This value is set to 60 by default
+>>>
+>>>**-Z [reset ** is the number of repetitions of the script for each frame size. It is set to 5 by default
+>>
+>>For the reset test the available options are:
+>>>**-M [MANUAL_RESET]** specifies if the reset of the Device Under Test must be executed manually or if the reset is triggered automatically by a script
+>>>
+>>>**-W [TIME]** time (in seconds) conceded to each trial of the test
+>>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**id** : Identifier of the configured experiment
+
+### Login
+
+Used to protect the API from unauthorized accesses. Before using the API methods listed below users must first login with their own platform credentials.
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/login |
+
+#### JSON Input Parameters
+
+>**username** (string, required) : The username used for authentication
+>
+>**password** (string, required) : The password used for authentication
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+
+### Logout
+
+Used to logout from the platform
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/logout |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+
+### Dataports
+
+Used to retrieve the list of the dataports of the box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/dataports |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**dataPorts** : Array with all the dataports of the box
+
+### Upload Distribution File
+
+Used to upload a distribution file (either Packet Size or Inter-departure distribution file) on the box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/distribution/:type/upload |
+
+#### Input Parameters
+
+This API method takes a multipart/form-data HTTP message as input with a parameter **filename** that points to the distribution file that has to be uploaded
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+#### Usage Example
+
+curl -i -H "Accept: application/json" -b "/tmp/cookies.txt" --http1.0 -F filename=@distribution.idt http://&lt;controller_ip>[:port]/api/distribution/:type/upload
+
+### Upload Payload Content File
+
+Used to upload a file with the payload content that can be used while generating test packets
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/payloadContent/upload |
+
+#### Input Parameters
+
+This API method takes a multipart/form-data HTTP message as input with a parameter **filename** that points to the payload content file that has to be uploaded
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+#### Usage Example
+
+curl -i -H "Accept: application/json" -b "/tmp/cookies.txt" --http1.0 -F filename=@payloads.pc http://&lt;controller_ip>[:port]/api/payloadContent/upload
+
+### Upload PCAP Trace
+
+Used to upload a PCAP trace that can be later used to replicate the traffic it stores
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/pcap/upload |
+
+#### Input Parameters
+
+This API method takes a multipart/form-data HTTP message as input with a parameter **filename** that points to the PCAP trace file that has to be uploaded
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+#### Usage Example
+
+curl -i -H "Accept: application/json" -b "/tmp/cookies.txt" --http1.0 -F filename=@NTP_sync.pcap http://&lt;controller_ip>[:port]/api/pcap/upload
+
+### Delete Presets
+
+Used to remove all the presets currently stored on the local box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| DELETE | http://&lt;controller_ip>[:port]/api/presets |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Get Presets
+
+Used to retrieve all the presets currently stored on the box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/presets |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**presets** : Array with all the presets currently stored on the box
+
+### Delete Single Preset
+
+Used to delete a single preset
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| DELETE | http://&lt;controller_ip>[:port]/api/presets/:id |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Edit Preset
+
+Used to edit a preset that is currently stored on the local box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/presets/edit |
+
+#### JSON Input Parameters
+
+>**id** : Identifier of the preset to be edited
+>
+>**set** : Array containing strings like "KEY=VALUE" where KEY is the property you want to change and VALUE is the new value of the property
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Upload Preset
+
+Used to upload a new preset to the local box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/presets/upload |
+
+#### Input Parameters
+
+This API method takes a multipart/form-data HTTP message as input with a parameter **filename** that points to the preset file that has to be uploaded
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+#### Usage Example
+
+curl -i -H "Accept: application/json" -b "/tmp/cookies.txt" --http1.0 -F filename=@preset.pset http://&lt;controller_ip>[:port]/api/presets/upload
+
+### Add Remote Box
+
+Used to add a new remote box to the local box or to a remote box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/remoteboxes |
+
+#### JSON Input Parameters
+
+>**id** : Identifier of the box on which the new remote box will be saved. If this field is omitted the remote box will be saved on the local box
+>
+>**name** : Name of the remote box to be saved
+>
+>**controlAddress** : Control IP address of the remote box to be saved
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**remoteBox** : JSON with all the information about the box identified with id
+>
+
+### Get Remote Boxes
+
+Used to retrieve the remote boxes currently saved on the local box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/remoteboxes |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**remoteBoxes** : Array with all the saved remote boxes
+>
+
+### Delete Remote Box
+
+Used to remove a remote box currently saved on the local box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| DELETE | http://&lt;controller_ip>[:port]/api/remoteboxes/:id |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Get Single Remote Box
+
+Used to retrieve information about a single remote box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/remoteboxes/:id |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**remoteBox** : JSON with information about the retrieved remote box
+>
+
+### Force Remote Box Update
+
+Used to force the update of a remote box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/remoteboxes/:id/force |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Get Results
+
+Used to retrieve all the results currently 
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/results |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**results** : Array with all the results saved on the box
+
+### Get Experiment Results
+
+Used to retrieve the results of a single experiment
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/retrieve/:dir |
+
+The "dir" parameter is the identifier for the experiment results that is returned by the API when an experiment is started
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**results** : Array with all the results of the selected experiment
+
+### Get HTML Report
+
+Used to retrieve a HTML report of the results of an experiment
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/retrieve/:dir/html |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+If the HTML report has been retrieved successfully the API method will return the HTML page of the report
+
+### Start Experiment
+
+Used to start an experiment that has been previously configured on the local box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/start |
+
+#### JSON Input Parameters
+
+>**id** : Identifier of the preset to load
+>
+>**callback** : URL that points to a method executed when the experiment finished.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Get Box Status
+
+Used to retrieve the current status of the box
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/status |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+>**result** : Current status of the box
+
+### Stop Experiment
+
+Used to stop a running experiment
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| GET | http://&lt;controller_ip>[:port]/api/stop |
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### Synchronize Box
+
+Used to synchronize the clocks of the boxes involved in an experiment
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/sync |
+
+#### JSON Input Parameters
+
+>**id** : Identifier of the box with which the local box has to synchronize
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
