@@ -107,3 +107,24 @@ menu:
                   syncbox:
                       text: Synchronize Box
                       relativeUrl: index.html#synchronize-box
+                  rfc2544:
+                      text: RFC 2544
+                      relativeUrl: index.html#rfc-2544
+                  rfc2679:
+                      text: RFC 2679
+                      relativeUrl: index.html#rfc-2679
+                  rfc2680:
+                      text: RFC 2680
+                      relativeUrl: index.html#rfc-2680
+                  rfc2681:
+                      text: RFC 2681
+                      relativeUrl: index.html#rfc-2681
+                  rfc3148:
+                      text: RFC 3148
+                      relativeUrl: index.html#rfc-3148
+                  rfc3393:
+                      text: RFC 3393
+                      relativeUrl: index.html#rfc-3393
+                  rfc3432:
+                      text: RFC 3432
+                      relativeUrl: index.html#rfc-3432

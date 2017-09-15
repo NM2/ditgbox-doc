@@ -374,9 +374,9 @@ Used to configure a new experiment
 >
 >**dst_dataport** (integer, required) : Destination data port id
 >
->**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+>**src_dataport_ip** (string, required except for RFC 2544 experiments for which this parameter must not be provided) : Source data port "IP/netmask"
 > 
->**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>**dst_dataport_ip** (string, required except for RFC 2544 experiments for which this parameter must not be provided) : Destination data port "IP/netmask"
 >
 >**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
 >
@@ -447,13 +447,11 @@ Used to configure a new experiment
 >>
 >>**lambda** (integer) : The generation frequency of the packets sent during the experiment
 >>
->>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>**tcp_implementation** (string) : TCP implementation to be used during the experiment. It can be: cubic, reno, tcp_bic, tcp_highspeed, tcp_htcp, tcp_hybla, tcp_illinois, tcp_lp (low priority), tcp_scalable, tcp_vegas, tcp_veno, tcp_westwood, tcp_yeah
 >>
->>**intervals** (integer) : In "sample" experiments it is used to compute jitter for "intervals" groups of packets
+>>**mss** (integer) : Maximum Segment Size. It must be lower than 9216
 >>
 >>**typeP** (json) : a json defining the kind of packets to be used during the experiment
->>>
->>>**l4_proto** (string) : Transport layer protocol
 >>>
 >>>**l3_proto** (string) : Network layer protocol
 >>>
@@ -772,11 +770,11 @@ Used to add a new remote box to the local box or to a remote box
 
 #### JSON Input Parameters
 
->**id** : Identifier of the box on which the new remote box will be saved. If this field is omitted the remote box will be saved on the local box
+>**id** (integer, required) : Identifier of the box on which the new remote box will be saved. If this field is omitted the remote box will be saved on the local box
 >
->**name** : Name of the remote box to be saved
+>**name** (string, required) : Name of the remote box to be saved
 >
->**controlAddress** : Control IP address of the remote box to be saved
+>**controlAddress** (string, required) : Control IP address of the remote box to be saved
 >
 
 #### JSON Output
@@ -862,7 +860,7 @@ Used to force the update of a remote box
 
 ### Get Results
 
-Used to retrieve all the results currently 
+Used to retrieve all the results currently stored on the box 
 
 #### Request
 
@@ -929,9 +927,9 @@ Used to start an experiment that has been previously configured on the local box
 
 #### JSON Input Parameters
 
->**id** : Identifier of the preset to load
+>**id** (integer, required) : Identifier of the preset to load
 >
->**callback** : URL that points to a method executed when the experiment finished.
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
 >This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
 >
 
@@ -989,9 +987,508 @@ Used to synchronize the clocks of the boxes involved in an experiment
 
 #### JSON Input Parameters
 
->**id** : Identifier of the box with which the local box has to synchronize
+>**id** (integer, required) : Identifier of the box with which the local box has to synchronize
 >
 
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 2544
+
+Used to execute an experiment compliant with RFC 2544
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc2544 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc2544"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**test** (string) : The type of RFC 2544 test to configure.
+>>It can be "throughput", "latency", "frame-loss", "back-to-back", "reset", "recovery" or "all"
+>>
+>>**has_ip** (boolean) : Determines if the Device Under Test has an IP address (used to avoid sending routing updates to the device if not needed)
+>>
+>>**dut_addr** (string) : IP address (if any) of the Device Under Test
+>>
+>>**modifier** (string) : Test modifier as reported in RFC 2544.
+>>It can be "routing_modifier", "management_modifier" or "broadcast_modifier"
+>>
+>>**reset_plugin** (string) : Reset script to be used if the reset test is run.
+>>It can be "DLink2640B", "CiscoCatalyst2960" or "EnterasysC3G12448P"
+>>
+>>**options** (string) : Options to be passed to the test. This field **MUST** be double quoted
+>>
+>>For the throughput test the available options are:
+>>>**-T [TRIAL_TIME]** is the maximum time (in seconds) conceded to each trial of the test. It can not be less than 60. This value is set to 60 by default
+>>>
+>>>**-R [RETRY]** is the maximum number of retries conceded to the script to compute the throughput with a binary search
+>>>
+>>>**-F [STARTING_FREQ]** is the starting frequency used at the start of each trial.
+>>>It represents the percentage of the maximum available theoretical band used at the start of each trial
+>>>
+>>
+>>>**-D [TIME]** is the maximum time (in seconds)  conceded to each trial of the test. It can not be less than 120. This value is set to 120 by default
+>>>
+>>>**-A [RETRY]** is the number of repetitions of the script. At least 20 retries for each tested frame size must be run. Its default value is 20
+>>>
+>>
+>>For the frame-loss test the available options are:
+>>>**-P [PACKETS]** is the number of packets to send in each traffic flow towards the Device Under Test
+>>>
+>>>**-G [GRANULARITY]** is the test granularity, that is the how much (in percentage) two successive frame sizes differ
+>>
+>>For the back-to-back test the available options are:
+>>>**-S [TRIAL_TIME]** is the time (in seconds) conceded to each trial of the test. It can not be less than 20. This value is set to 20 by default
+>>>
+>>>**-C [RETRY]** is the number of repetitions of the script. At least 50 retries for each tested frame size must be run. Its default value is 50 
+>>>
+>>For the system recovery test the available options are:
+>>>**-L [TIME]** is the duration (in seconds) of the test traffic sent during the experiment for each frame size. It can not be less than 60. This value is set to 60 by default
+>>>
+>>>**-Z [reset ** is the number of repetitions of the script for each frame size. It is set to 5 by default
+>>
+>>For the reset test the available options are:
+>>>**-M [MANUAL_RESET]** specifies if the reset of the Device Under Test must be executed manually or if the reset is triggered automatically by a script
+>>>
+>>>**-W [TIME]** time (in seconds) conceded to each trial of the test
+>>
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 2679
+
+Used to execute an experiment compliant with RFC 2679
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc2679 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc2679"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 2680
+
+Used to execute an experiment compliant with RFC 2680
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc2680 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc2680"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 2681
+
+Used to execute an experiment compliant with RFC 2681
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc2681 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc2681"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 3148
+
+Used to execute an experiment compliant with RFC 3148
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc3148 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc3148"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : The duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : The generation frequency of the packets sent during the experiment
+>>
+>>**tcp_implementation** (string) : TCP implementation to be used during the experiment. It can be: cubic, reno, tcp_bic, tcp_highspeed, tcp_htcp, tcp_hybla, tcp_illinois, tcp_lp (low priority), tcp_scalable, tcp_vegas, tcp_veno, tcp_westwood, tcp_yeah
+>>
+>>**mss** (integer) : Maximum Segment Size. It must be lower than 9216
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 3393
+
+Used to execute an experiment compliant with RFC 3393
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc3393 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc3393"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**intervals** (integer) : In "sample" experiments it is used to compute jitter for "intervals" groups of packets
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
+#### JSON Output
+
+>**status** : Status of the call. It can be "ok" or "err"
+>
+>**msg** : Status message containing information on the outcome of the call
+>
+
+### RFC 3432
+
+Used to execute an experiment compliant with RFC 3432
+
+#### Request
+
+|  Method  |   URL  |
+|:--------:|:------:|
+| POST | http://&lt;controller_ip>[:port]/api/rfc3432 |
+
+#### JSON Input Parameters
+
+>**experiment_type** (string, required) : "rfc3432"
+>
+>**name** (string, required) : Name of the experiment/preset
+>
+>**destination_type** (string, required) : Indicates if the experiment must be run in loopback or towards a remote box (box-to-box).
+>It can be: "loopback" or "remoteBox"
+>
+>**remote_box_id** (integer) : Indicates the remote box involved in the experiment (only for box-to-box experiments)
+>
+>**src_dataport** (integer, required) : Source data port id
+>
+>**dst_dataport** (integer, required) : Destination data port id
+>
+>**src_dataport_ip** (string, required) : Source data port "IP/netmask"
+> 
+>**dst_dataport_ip** (string, required) : Destination data port "IP/netmask"
+>
+>**callback** (string, required) : URL that points to a method executed when the experiment finishes.
+>This method will return the identifier of the experiment to the user. This identifier can be later used to retrieve the results of this experiment
+>
+>**parameters** (json) : JSON that stores the remaining input parameters needed by the specific experiment
+>>**mode** (string) : Experiment mode. It can be "singleton" or "sample"
+>>
+>>**t0** (integer) : Time to wait before the traffic generation starts
+>>
+>>**tf** (integer) : If "mode" is "singleton", "tf" is not admitted. If "mode" is "sample", "tf" is the duration (in ms) of the experiment
+>>
+>>**lambda** (integer) : If "mode" is "singleton", "lambda" is not admitted. If "mode" is "sample", "lambda" is the generation frequency of the packets sent during the experiment
+>>
+>>**threshold** (number) : time threshold used to determine if a received packet must be considered lost
+>>
+>>**typeP** (json) : a json defining the kind of packets to be used during the experiment
+>>>
+>>>**l4_proto** (string) : Transport layer protocol
+>>>
+>>>**l3_proto** (string) : Network layer protocol
+>>>
+>>>**srcport** (integer) : Source port
+>>>
+>>>**dstport** (integer) : Destination port
+>>>
+>>>**payload** (integer) : Number of octects in the payload of packets
+>>>
+>>>**diffserv** (integer) : Value of the DS byte in the IP header
+>>>
+>>>**ttl** (integer) : Time To Live in the IP header
+>>>
+>>
+>
 #### JSON Output
 
 >**status** : Status of the call. It can be "ok" or "err"
