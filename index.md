@@ -332,6 +332,10 @@ license information for third party components used in DITGBox.
 
 DITGBox provides an easy-to-use RESTful API that can be used to interact with the platform
 
+### Low-level API methods
+
+The following methods are primitives that can be invoked to perform low-level operations
+
 ### Abort
 
 Used to stop a running experiment (the results collected up to that point are lost)
@@ -996,6 +1000,10 @@ Used to synchronize the clocks of the boxes involved in an experiment
 >
 >**msg** : Status message containing information on the outcome of the call
 >
+
+### High-level API methods
+
+The following methods can be invoked to configure and execute experiments compliant with the supported RFCs
 
 ### RFC 2544
 
